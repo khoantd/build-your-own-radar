@@ -1,40 +1,45 @@
 // file: model.c4
-// Purpose: Model cho ThoughtWorks Radar project
+// Purpose: Model cho ThoughtWorks Radar
 // Owner: ThoughtWorks Team
 
 specification {
   element actor { style { shape person; color amber } }
-  element system
-  element service
+  element system { }
+  element service { }
   element db { style { shape storage; icon tech:google-sheets } }
-  element queue { style { shape queue } }
-  
+
   tag external
 }
 
 model {
-  radarApp = system 'ThoughtWorks Radar' {
-    dataService = service 'Data Input Service' {
+  radar = system 'ThoughtWorks Radar' {
+    dataSource = service 'Google Sheets Data Source' {
+      description 'Primary data source for radar generation.'
       technology 'Google Sheets'
     }
+    management = service 'Data Management' {
+      description 'Handles data processing and access.'
+      technology 'Serverless'
+    }
   }
-  
-  googleSheets = db 'Google Sheets' { #external }
+
+  googleSheets = system 'Google Sheets' { #external }
 
   // Relationships
-  radarApp -> googleSheets 'uses for input data'
+  radar -> googleSheets 'pulls data from'
+  radar.management -> radar.dataSource 'processes'
 }
 
 views {
   view index {
-    title 'System Overview'
+    title 'ThoughtWorks Radar Architecture'
     include *
     autoLayout LeftRight
   }
 
-  dynamic view userOnboarding {
-    title 'User Onboarding Flow'
-    user -> radarApp 'accesses Radar'
-    radarApp -> googleSheets 'retrieves data from'
+  dynamic view dataFlow {
+    title 'Data Flow in ThoughtWorks Radar'
+    radar.dataSource -> googleSheets 'uses'
+    googleSheets -> radar.management 'provides data'
   }
 }
