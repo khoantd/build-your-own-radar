@@ -3,46 +3,57 @@ specification {
   element system
   element container
   element component
+  element external { style { shape queue; icon tech:sheets } }
+  tag external
+  element link
 }
 
 model {
-  user = actor 'User' 'End user'
-  googleSheets = system 'Google Sheets' { #external }
+  user = actor 'User' {
+    metadata { owner 'frontend-team' }
+  }
 
-  radar = system 'ThoughtWorks Radar' {
-    frontend = container 'Frontend' {
-      technology 'React'
-    }
-    backend = container 'Backend Service' {
-      technology 'Node.js'
-      googleSheetsReader = component 'Google Sheets Reader' {
-        technology 'Google APIs'
+  radarApp = system 'ThoughtWorks Radar' {
+    webApp = container 'Web App' {
+      metadata { owner 'frontend-team' }
+      ui = component 'User Interface' {
+        metadata { owner 'frontend-team' }
+      }
+      dataFetcher = component 'Data Fetcher' {
+        metadata { owner 'backend-team' }
       }
     }
   }
 
-  user -> frontend 'uses'
-  frontend -> backend 'API calls'
-  radar.backend.googleSheetsReader -> googleSheets 'reads data'
-  radar.backend -> radar.frontend 'sends radar'
+  googleSheets = external 'Google Sheets' { #external
+    metadata { owner 'google' }
+    link https://docs.google.com/spreadsheets/d/your-sheet-id 'Public Radar Data Sheet'
+  }
+
+  user -> webApp 'opens radar page'
+  dataFetcher -> googleSheets 'fetches data via Sheets API'
+  webApp -> user 'renders radar'
 }
 
 views {
   view index {
-    title 'Landscape'
+    title 'Project Landscape'
     include *
-    autoLayout LeftRight
+    autoLayout RightLeft
   }
 
-  view radarContext of radar {
-    title 'ThoughtWorks Radar – Context'
+  view system radarApp {
+    title 'ThoughtWorks Radar System'
     include *
+    include -> dataFetcher
     include -> googleSheets
   }
 
-  dynamic view sheetDataFlow {
-    title 'Google Sheets Data Flow'
-    radar.backend.googleSheetsReader -> googleSheets 'reads data'
-    radar.backend -> radar.frontend 'sends radar'
+  dynamic view dataPipeline {
+    title 'Data Flow from Google Sheets to Radar'
+    user -> webApp 'opens radar page'
+    dataFetcher -> googleSheets 'calls Sheets API'
+    googleSheets -> dataFetcher 'returns data'
+    webApp -> user 'renders radar'
   }
 }
