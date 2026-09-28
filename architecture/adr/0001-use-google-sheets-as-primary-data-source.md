@@ -1,13 +1,14 @@
 ---
 
-## number: 1  
+## number: 1
+
 status: approved
 
 ---
 
-number: 1
-title: Use Google Sheets as Primary Data Source
-status: proposed
+number: 1  
+title: Use Google Sheets as Primary Data Source  
+status: approved  
 decided\_at: 2026-09-28
 
 # ADR-0001: Use Google Sheets as Primary Data Source
