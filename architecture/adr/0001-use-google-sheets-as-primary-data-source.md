@@ -1,3 +1,7 @@
+---
+status: accepted
+---
+
 ## ADR-0001: Use Google Sheets as Primary Data Source
 
 ## Context
