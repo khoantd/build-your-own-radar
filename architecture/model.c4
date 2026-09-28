@@ -1,59 +1,68 @@
 specification {
-  element actor { style { shape person; color amber } }
+  element actor {
+    style {
+      shape person
+      color amber
+    }
+  }
   element system
   element container
-  element component
-  element external { style { shape queue; icon tech:sheets } }
   tag external
-  element link
 }
 
 model {
   user = actor 'User' {
-    metadata { owner 'frontend-team' }
+    metadata {
+      owner 'radar-team'
+    }
   }
 
   radarApp = system 'ThoughtWorks Radar' {
-    webApp = container 'Web App' {
-      metadata { owner 'frontend-team' }
-      ui = component 'User Interface' {
-        metadata { owner 'frontend-team' }
+    metadata {
+      owner 'radar-team'
+    }
+    web = container 'Web UI' {
+      technology 'React'
+      metadata {
+        owner 'radar-team'
       }
-      dataFetcher = component 'Data Fetcher' {
-        metadata { owner 'backend-team' }
+    }
+    ingest = container 'Data Ingestion Service' {
+      technology 'Node.js'
+      metadata {
+        owner 'radar-team'
       }
     }
   }
 
-  googleSheets = external 'Google Sheets' { #external
-    metadata { owner 'google' }
-    link https://docs.google.com/spreadsheets/d/your-sheet-id 'Public Radar Data Sheet'
+  googleSheets = system 'Google Sheets' {
+    metadata {
+      owner 'google'
+    }
   }
 
-  user -> webApp 'opens radar page'
-  dataFetcher -> googleSheets 'fetches data via Sheets API'
-  webApp -> user 'renders radar'
+  user -> radarApp.web 'uses'
+  radarApp.web -> radarApp.ingest 'fetches data'
+  radarApp.ingest -> googleSheets 'reads data from'
 }
 
 views {
   view index {
-    title 'Project Landscape'
+    title 'ThoughtWorks Radar Architecture'
     include *
-    autoLayout RightLeft
+    autoLayout LeftRight
   }
 
-  view system radarApp {
-    title 'ThoughtWorks Radar System'
+  view radarContext of radarApp {
+    title 'Radar Application Context'
     include *
-    include -> dataFetcher
-    include -> googleSheets
+    autoLayout LeftRight
   }
 
-  dynamic view dataPipeline {
-    title 'Data Flow from Google Sheets to Radar'
-    user -> webApp 'opens radar page'
-    dataFetcher -> googleSheets 'calls Sheets API'
-    googleSheets -> dataFetcher 'returns data'
-    webApp -> user 'renders radar'
+  dynamic view dataFlow {
+    title 'Data Flow from User to Google Sheets'
+    user -> radarApp.web 'opens UI'
+    radarApp.web -> radarApp.ingest 'requests data'
+    radarApp.ingest -> googleSheets 'reads sheet'
   }
 }
