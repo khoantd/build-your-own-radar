@@ -1,45 +1,48 @@
-// file: model.c4
-// Purpose: Model cho ThoughtWorks Radar
-// Owner: ThoughtWorks Team
-
 specification {
   element actor { style { shape person; color amber } }
-  element system { }
-  element service { }
-  element db { style { shape storage; icon tech:google-sheets } }
-
-  tag external
+  element system
+  element container
+  element component
 }
 
 model {
+  user = actor 'User' 'End user'
+  googleSheets = system 'Google Sheets' { #external }
+
   radar = system 'ThoughtWorks Radar' {
-    dataSource = service 'Google Sheets Data Source' {
-      description 'Primary data source for radar generation.'
-      technology 'Google Sheets'
+    frontend = container 'Frontend' {
+      technology 'React'
     }
-    management = service 'Data Management' {
-      description 'Handles data processing and access.'
-      technology 'Serverless'
+    backend = container 'Backend Service' {
+      technology 'Node.js'
+      googleSheetsReader = component 'Google Sheets Reader' {
+        technology 'Google APIs'
+      }
     }
   }
 
-  googleSheets = system 'Google Sheets' { #external }
-
-  // Relationships
-  radar -> googleSheets 'pulls data from'
-  radar.management -> radar.dataSource 'processes'
+  user -> frontend 'uses'
+  frontend -> backend 'API calls'
+  radar.backend.googleSheetsReader -> googleSheets 'reads data'
+  radar.backend -> radar.frontend 'sends radar'
 }
 
 views {
   view index {
-    title 'ThoughtWorks Radar Architecture'
+    title 'Landscape'
     include *
     autoLayout LeftRight
   }
 
-  dynamic view dataFlow {
-    title 'Data Flow in ThoughtWorks Radar'
-    radar.dataSource -> googleSheets 'uses'
-    googleSheets -> radar.management 'provides data'
+  view radarContext of radar {
+    title 'ThoughtWorks Radar – Context'
+    include *
+    include -> googleSheets
+  }
+
+  dynamic view sheetDataFlow {
+    title 'Google Sheets Data Flow'
+    radar.backend.googleSheetsReader -> googleSheets 'reads data'
+    radar.backend -> radar.frontend 'sends radar'
   }
 }
